@@ -1,0 +1,4 @@
+name = "TestRay"
+uuid = "aa3bcaa6-ef2d-4a23-a90f-49a18a88edc0"
+authors = ["nuuccha <gleb.vdovin@gmail.com>"]
+version = "0.1.0"
