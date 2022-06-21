@@ -187,7 +187,8 @@ function Propagate(Ray_pencil::Vector{Ray}, OptSys::Tuple)
         GC[:,1] = GC[:,1] .- mean(GC[:,1])
         GC[:,2] = GC[:,2] .- mean(GC[:,2])
         GC[:,3] =sqrt.(GC[:,1].^2 + GC[:,2].^2)
-        return("RMS y=",std(GC[:,1]),"RMS z=",std(GC[:,2]),"RMS radial=",std(GC[:,3]))  
+        #return("RMS y=",std(GC[:,1]),"RMS z=",std(GC[:,2]),"RMS radial=",std(GC[:,3]))
+        return(std(GC[:,3]),std(GC[:,1]),std(GC[:,2]))  
     end  
     
     

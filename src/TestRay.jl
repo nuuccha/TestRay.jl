@@ -20,16 +20,30 @@ s=Surf(0.0, 20000.0, 1.0)
 s1=Surf(0, 5, 1.0)
 s2=Surf(0, 97, 1.0)
 =#
-OptSys = (s,s1,s2,s3,s4,s5,s6,s7)
+entr_pupil = Pupil(20000.0, 12.0 ,0.0 ,0.0)
+pencil = make__hex_pencil(2000.0, 0.0, entr_pupil, 41)
 
+ff = Array{Float64}(undef, 100)
+dd = Array{Float64}(undef, 100)
+for ii in 1:100
+    dist = 83+0.01*ii
+    pencil = make__hex_pencil(0.0, 0.0, entr_pupil, 41)
+    s7=Surf(0.0, dist, 1.0 )
+    OptSys1 = (s,s1,s2,s3,s4,s5,s6,s7)
+    Propagate(pencil, OptSys1)  # does work !!!
+    ff[ii] = (Pencil_rms(pencil))[1]
+    dd[ii] = dist
+    ii = ii + 1
+end
+(display(plot(dd,ff)))
+#=
 l=Surf(0, 20000.0, 1.5)
 l1=Surf(-50, 20.0, 1.0)
 l2=Surf(-20, 100., 1.0)
 OptSys=(l, l1, l2)
 #s=Surf(0.0, 20000.0, 1.0)
 #OptSys = (s,)
-entr_pupil = Pupil(20000.0-70, 10.0 ,0.0 ,0.0)
-pencil = make__hex_pencil(1000.0, 0.0, entr_pupil, 41)
+
 #=
 #example of a composite pencil made of several pencils
 pencil2 = make__hex_pencil(0.0, -1000.0, entr_pupil, 3)
@@ -44,7 +58,7 @@ pencil=vcat(pencil,pencil3)
     println("Focus position = ",focus_position(pencil,OptSys))
     
     #Propagating the pencil through the system:
-    @time Propagate(pencil, OptSys)  # does work !!!
+    @time Propagate(pencil, OptSys1)  # does work !!!
     
     # extracting the ray coordinates
     xx = Array{Float64}(undef,size(pencil))
@@ -58,5 +72,5 @@ pencil=vcat(pencil,pencil3)
     println(Pencil_rms(pencil))
     (display(scatter(xx, yy)))
     
-
+=#
 end # module
