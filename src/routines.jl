@@ -18,75 +18,80 @@ function Propagate(R::Ray, S::Paraxial)
     cy= ((-(R.y - hy) / S.f))
     cz= ((-(R.z - hz) / S.f))
     cx=sqrt(1.0-cy^2 - cz^2)
-    R1 = Ray(R.x+1*(R.y^2+R.z^2)/2.0/S.f , R.y, R.z, cx, cy, cz, R.n)
+    R1 = Ray(R.x+1*(R.y^2+R.z^2)/2.0/S.f , R.y, R.z, cx, cy, cz, R.n, 0)
     #println(acos(cx))
     #println(ccz)
     return R1
 end
 
+""" original Donald P Feder JOSA 41 p630 Sep 1951
+    Optical calculations with automatic computer machinery
+    The function propagates ray distance d to the surface
+    and then calculates the coordinates of refracted ray in the
+    intersection point
+    Rcx=sqrt(1.0 - R.cz^2 - R.cy^2)# calculated assumnig unit ray vector """
 function Propagate(R::Ray, S::Surf)
     
-    # original Donald P Feder JOSA 41 p630 Sep 1951
-    # Optical calculations with automatic computer machinery
-    #The function propagates ray distance d to the surface
-    # and then calculates the coordinates of refracted ray in the
-    # intersection point
-    #Rcx=sqrt(1.0 - R.cz^2 - R.cy^2)# calculated assumnig unit ray vector
-    ss = sqrt(R.cx^2 + R.cy^2 + R.cz^2)
-    Rcx=R.cx/ss
-    Rcy=R.cy/ss
-    Rcz=R.cz/ss
+    if R.empty == 0
+        ss = sqrt(R.cx^2 + R.cy^2 + R.cz^2)
+        Rcx=R.cx/ss
+        Rcy=R.cy/ss
+        Rcz=R.cz/ss
 
-    mu=R.n/S.n  # ratio of the refraction indices
-    if S.r == 0.0
-        c = 0.0   # curvature of the surface
-    else
-        c = 1.0 / S.r
-    end
+        mu=R.n/S.n  # ratio of the refraction indices
+        if S.r == 0.0
+            c = 0.0   # curvature of the surface
+        else
+            c = 1.0 / S.r
+        end
 
-    #println(c*(R.x^2+R.y^2+R.z^2)-2.0*R.x)  # test on distances
-    #println(R.cx, " ", R.cy, " ", R.cz)  # test on angles
-    
-    e= S.d*Rcx - R.x*Rcx -R.y*Rcy - R.z*Rcz
-    M1x = R.x + e*Rcx - S.d
-    M12 = R.x^2 + R.y^2 + R.z^2 - e^2 + S.d^2 - 2.0 * S.d * R.x
-    #println(R.x,"  ",R.y,"  ",R.z,"  ",Rcx,"  ",Rcy,"  ",Rcz,"  ")
-    #=
-    try
+        #println(c*(R.x^2+R.y^2+R.z^2)-2.0*R.x)  # test on distances
+        #println(R.cx, " ", R.cy, " ", R.cz)  # test on angles
+        
+        e= S.d*Rcx - R.x*Rcx -R.y*Rcy - R.z*Rcz
+        M1x = R.x + e*Rcx - S.d
+        M12 = R.x^2 + R.y^2 + R.z^2 - e^2 + S.d^2 - 2.0 * S.d * R.x
+        #println(R.x,"  ",R.y,"  ",R.z,"  ",Rcx,"  ",Rcy,"  ",Rcz,"  ")
+        
+        if (Rcx^2 - c*(c*M12 -2.0 * M1x)) < 0.0
+            R1 = R1 = Ray(R.x,R.y,R.z,R.cx,R.cy,R.cz,S.n, 1)
+            return R1
+        end
+        #println("!!!!!!!!!!!!!!!!!!!!!!!!!")
         ksi1 = sqrt(Rcx^2 - c*(c*M12 -2.0 * M1x))
-    catch e
-        println(R.x,"  ",R.y,"  ",R.z,"  ",Rcx,"  ",Rcy,"  ",Rcz,"  ")
+        #println(ksi1)
+        L = e + (c*M12 - 2*M1x)/(Rcx + ksi1)
+        x = R.x + L*Rcx - S.d
+        y = R.y + L*Rcy
+        z = R.z + L*Rcz
+        if  (1.0 - mu^2 * (1.0 - ksi1^2)) < 0.0
+            R1 = Ray(R.x,R.y,R.z,R.cx,R.cy,R.cz,S.n, 1)
+            return R1
+        end
+        ksi11 = sqrt(1.0 - mu^2 * (1.0 - ksi1^2))
+        g1 = ksi11 - mu*ksi1
+        cx = mu * Rcx - g1 * c * x + g1
+        cy = mu * Rcy - g1 * c * y
+        cz = mu * Rcz - g1 * c * z
+        ll = sqrt(cx*cx + cy*cy + cz*cz)
+        #if ll > 1 println(ll) end
+        R1 = Ray(x,y,z,cx/ll,cy/ll,cz/ll,S.n, 0)
+        #println(g1)
+        #println(c)
+        #println(y)
+        return R1
+    else
+       return Ray(R.x,R.y,R.z,R.cx,R.cy,R.cz,S.n, 1) 
     end
-    =#
-    ksi1 = sqrt(Rcx^2 - c*(c*M12 -2.0 * M1x))
-    #println(ksi1)
-    L = e + (c*M12 - 2*M1x)/(Rcx + ksi1)
-    x = R.x + L*Rcx - S.d
-    y = R.y + L*Rcy
-    z = R.z + L*Rcz
-
-    ksi11 = sqrt(1.0 - mu^2 * (1.0 - ksi1^2))
-    g1 = ksi11 - mu*ksi1
-    cx = mu * Rcx - g1 * c * x + g1
-    cy = mu * Rcy - g1 * c * y
-    cz = mu * Rcz - g1 * c * z
-    ll = sqrt(cx*cx + cy*cy + cz*cz)
-    #if ll > 1 println(ll) end
-    R1 = Ray(x,y,z,cx/ll,cy/ll,cz/ll,S.n)
-    #println(g1)
-    #println(c)
-    #println(y)
-    return R1
-    
-
    #println(c*(R1.x^2+R1.y^2+R1.z^2)-2*R1.x)  # test on distances
    #println(R1.cx^2+R1.cy^2+R1.cz^2)  # test on angles
 end
 
 
 """ 
-Forms hex grid with origin at 0.0 and horizontal step of 1.0
-The Hex Order is defined by number of elements contained in one of hexagon sides   
+Forms hex grid with origin at 0. 0. and horizontal step of 1.0
+The Hex Order is defined by number of elements contained in one of the hexagon sides
+For HexOrder = 5 the total number of hexagons in the grid will be 61   
 """
 function HexagonalGrid(HexOrder=5, StepX = 1.0, xc=0, yc=0)
     numpoints = Int(round(HexOrder^2*3.1))
@@ -118,10 +123,15 @@ function HexagonalGrid(HexOrder=5, StepX = 1.0, xc=0, yc=0)
     return GridCoord[1:ij,:]
 end
 
+""" Hexagonal ray pencil pointed from x0 y0 to the entrance pupil 
+    Hex_order is the number of rays in the side of hexagon
+    for Hex_Order = 5 a hexagon pencil with 61 ray will be produced"""
 function make__hex_pencil(y0, z0, pupil::Pupil, Hex_Order=5)
+    # directions to the pupil center:
     dd = sqrt((pupil.y-y0)^2+(pupil.z-z0)^2+pupil.distance^2)
     dir_y=(pupil.y - y0) / dd
     dir_z=(pupil.z - z0) / dd
+    # the pencil angle
     maxang = (pupil.radius) / dd
     angles = HexagonalGrid(Hex_Order)
     np=size(angles)[1] 
@@ -132,7 +142,7 @@ function make__hex_pencil(y0, z0, pupil::Pupil, Hex_Order=5)
         angles[i,1] = angles[i,1]+dir_y
         angles[i,2] = angles[i,2]+dir_z
             cx=sqrt(1.0 - (angles[i,1])^2 - (angles[i,2])^2)
-            pencil[i] = Ray(0.0, y0, z0, cx, angles[i,1] , angles[i,2] , 1.0)
+            pencil[i] = Ray(0.0, y0, z0, cx, angles[i,1] , angles[i,2] , 1.0, 0)
     end
     return(pencil)
 end
@@ -165,7 +175,7 @@ function focus_position(pencil::Vector{Ray},OSys::Tuple)
     end
 
 
-""" propagation of the ray pencil through тхе system """
+""" propagation of the ray pencil through the system """
 function Propagate(Ray_pencil::Vector{Ray}, OptSys::Tuple)
     #println(size(Ray_pencil)[1], " ", size(Ray_pencil)[2])
         for OptSurf in OptSys
@@ -180,19 +190,29 @@ function Propagate(Ray_pencil::Vector{Ray}, OptSys::Tuple)
     function Pencil_rms(Ray_pencil::Vector{Ray})
     numpoints =size(Ray_pencil)[1]
     GC = Array{Float64,2}(undef, numpoints,3)
+    ij=0    
         for i in 1:numpoints
-            GC[i,1] = Ray_pencil[i].y
-            GC[i,2] = Ray_pencil[i].z
+            rrr = Ray_pencil[i]
+            if  rrr.empty == 0 # checking for empty ray
+                ij=ij+1
+                GC[ij,1] = Ray_pencil[i].y
+                GC[ij,2] = Ray_pencil[i].z
+            end
         end
-        GC[:,1] = GC[:,1] .- mean(GC[:,1])
-        GC[:,2] = GC[:,2] .- mean(GC[:,2])
-        GC[:,3] =sqrt.(GC[:,1].^2 + GC[:,2].^2)
+        GC[1:ij,1] = GC[1:ij,1] .- mean(GC[1:ij,1])
+        GC[1:ij,2] = GC[1:ij,2] .- mean(GC[1:ij,2])
+        GC[1:ij,3] =sqrt.(GC[1:ij,1].^2 + GC[1:ij,2].^2)
+        if ij < 3  # checking for ray total to be more than 3
+            #println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            return (1000.,1000.,1000)
+        else
         #return("RMS y=",std(GC[:,1]),"RMS z=",std(GC[:,2]),"RMS radial=",std(GC[:,3]))
-        return(std(GC[:,3]),std(GC[:,1]),std(GC[:,2]))  
+            return(std(GC[1:ij,3]),std(GC[1:ij,1]),std(GC[1:ij,2]))
+        end  
     end  
     
     
-""" Refractive index from the glass nema, using Abbe approximation """
+""" Refractive index from the glass data n and nu, using Abbe approximation """
     function n_Abbe(lambda, glass::Glass)
         if glass.typ != "E"
             lambda1=486.1
@@ -216,7 +236,7 @@ function Propagate(Ray_pencil::Vector{Ray}, OptSys::Tuple)
         a = (nr-1.0)*lambda1*lambda3/(nu*(lambda3-lambda1))
         b = nr*lambda2*nu*(lambda3-lambda1)-(nr-1.0)*lambda1*lambda3
         b=b/(lambda2*nu*(lambda3-lambda1))
-        cc1 = ((a/lambda) +b )
+        cc1 = ((a / lambda) + b )
         return cc1 
     
     end

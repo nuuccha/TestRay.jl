@@ -1,12 +1,16 @@
-
-struct Ray  # Defined as in Mikhelson "optics for astronomical telescopes" p93
-    x::Float64  #Position related to the origin
+""" Defined as in Mikhelson "optics for astronomical telescopes" p93 
+    Ray.x  Ray.y Ray.z is the position related to the origin 
+    Ray.cx Ray.cy Ray.cz vector cosines, Ray.n is the refraction index
+    if Ray.empty == 0 then the ray is processed, otherwise ignored"""
+struct Ray   
+    x::Float64  
     y::Float64
     z::Float64
-    cx::Float64 # direction cosines
+    cx::Float64 
     cy::Float64
     cz::Float64
-    n::Float64 # refraction index of current
+    n::Float64 
+    empty::Int32  
 end
 
 struct Surf  # Defined as in Mikhelson "optics for astronomical telescopes" p94
