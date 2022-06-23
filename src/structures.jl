@@ -27,7 +27,7 @@ with the specifics defined on the fly """
 abstract type Surface end
 
 """ normal refracting surface """
-struct Surf <: Surface  # Defined as in Mikhelson "optics for astronomical telescopes" p94
+mutable struct Surf <: Surface  # Defined as in Mikhelson "optics for astronomical telescopes" p94
     r::Float64  # ROC
     d::Float64  # thickness BEFORE surface
     n::Float64   # refractive index
@@ -66,4 +66,5 @@ LAFN7=AbbeGlass(1.7495, 34.95, "D")
 NF2=AbbeGlass(1.62005, 36.43, "D")
 NSF6=AbbeGlass(1.80518, 25.36, "D")
 NPK52A=AbbeGlass(1.497, 81.61, "D")
+AIR=AbbeGlass(1.0, 10000., "D")
 

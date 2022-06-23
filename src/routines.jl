@@ -211,7 +211,44 @@ function Propagate(Ray_pencil::Vector{Ray}, OptSys::Tuple)
         end  
     end  
     
+    """ propagation of the ray pencil through the system """
+    function Propagate(Ray_pencil::Vector{Ray}, OptSys::Vector{Surface})
+        #println(size(Ray_pencil)[1], " ", size(Ray_pencil)[2])
+            for OptSurf in OptSys
+                for i in 1:size(Ray_pencil)[1]
+                    Ray_pencil[i] = Propagate(Ray_pencil[i],OptSurf)
+                end
+            end
+            return(Ray_pencil)
+        end
     
+        """ Pencil RMS """
+        function Pencil_rms(Ray_pencil::Vector{Ray})
+        numpoints =size(Ray_pencil)[1]
+        GC = Array{Float64,2}(undef, numpoints,3)
+        ij=0    
+            for i in 1:numpoints
+                rrr = Ray_pencil[i]
+                if  rrr.empty == 0 # checking for empty ray
+                    ij=ij+1
+                    GC[ij,1] = Ray_pencil[i].y
+                    GC[ij,2] = Ray_pencil[i].z
+                end
+            end
+            GC[1:ij,1] = GC[1:ij,1] .- mean(GC[1:ij,1])
+            GC[1:ij,2] = GC[1:ij,2] .- mean(GC[1:ij,2])
+            GC[1:ij,3] =sqrt.(GC[1:ij,1].^2 + GC[1:ij,2].^2)
+            if ij < 3  # checking for ray total to be more than 3
+                #println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                return (1000.,1000.,1000)
+            else
+            #return("RMS y=",std(GC[:,1]),"RMS z=",std(GC[:,2]),"RMS radial=",std(GC[:,3]))
+                return(std(GC[1:ij,3]),std(GC[1:ij,1]),std(GC[1:ij,2]))
+            end  
+        end  
+        
+    
+
 """ Refractive index from the glass data n and nu, using Abbe approximation """
     function n_Abbe(lambda, glass::AbbeGlass)
         if glass.typ != "E"
@@ -252,12 +289,18 @@ function Propagate(Ray_pencil::Vector{Ray}, OptSys::Tuple)
         end
     #println(Pencil_rms(pencil))
     (display(scatter(xx, yy)))
+    #(display(scatter!(xx, yy))) # to overlay graphs
     end
 
-function ConvFromAbbe(sur::Abbe_Surf)
-    
+function ConvFromAbbe(sur::Abbe_Surf) 
     n = n_Abbe(sur.lambda, sur.glass)
     return Surf(sur.r, sur.d, n, sur.e2, sur.stop)
 end
 
-    
+function TupleSize(a::Tuple)
+    ii=0
+    for asa in a
+        ii += 1
+    end
+    return ii
+end    
