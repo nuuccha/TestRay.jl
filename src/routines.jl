@@ -213,7 +213,7 @@ function Propagate(Ray_pencil::Vector{Ray}, OptSys::Tuple)
     
     
 """ Refractive index from the glass data n and nu, using Abbe approximation """
-    function n_Abbe(lambda, glass::Glass)
+    function n_Abbe(lambda, glass::AbbeGlass)
         if glass.typ != "E"
             lambda1=486.1
             lambda2=589.2
@@ -236,8 +236,28 @@ function Propagate(Ray_pencil::Vector{Ray}, OptSys::Tuple)
         a = (nr-1.0)*lambda1*lambda3/(nu*(lambda3-lambda1))
         b = nr*lambda2*nu*(lambda3-lambda1)-(nr-1.0)*lambda1*lambda3
         b=b/(lambda2*nu*(lambda3-lambda1))
-        cc1 = ((a / lambda) + b )
-        return cc1 
+        refr_ind = ((a / lambda) + b )
+        return refr_ind
     
     end
+    
+    function show_pencil(Ray_pencil::Vector{Ray})
+        xx = Array{Float64}(undef,size(Ray_pencil)[1])
+        yy = Array{Float64}(undef,size(Ray_pencil)[1])
+        for i in 1:size(Ray_pencil)[1]
+            #println(pencil[i,j])
+            rr = Ray_pencil[i]
+             xx[i] = Ray_pencil[i].y
+             yy[i] = rr.z
+        end
+    #println(Pencil_rms(pencil))
+    (display(scatter(xx, yy)))
+    end
+
+function ConvFromAbbe(sur::Abbe_Surf)
+    
+    n = n_Abbe(sur.lambda, sur.glass)
+    return Surf(sur.r, sur.d, n, sur.e2, sur.stop)
+end
+
     
