@@ -19,6 +19,7 @@ function Propagate(R::Ray, S::Paraxial)
     cz= ((-(R.z - hz) / S.f))
     cx=sqrt(1.0-cy^2 - cz^2)
     R1 = Ray(R.x+1*(R.y^2+R.z^2)/2.0/S.f , R.y, R.z, cx, cy, cz, R.n, 0)
+    if (R.y^2+R.z^2) > S.aper^2 R1.empty = 1 end
     #println(acos(cx))
     #println(ccz)
     return R1
@@ -32,57 +33,52 @@ end
     Rcx=sqrt(1.0 - R.cz^2 - R.cy^2)# calculated assumnig unit ray vector """
 function Propagate(R::Ray, S::Surf)
     
-    if R.empty == 0
-        ss = sqrt(R.cx^2 + R.cy^2 + R.cz^2)
-        Rcx=R.cx/ss
-        Rcy=R.cy/ss
-        Rcz=R.cz/ss
+    if R.empty != 0
+        return Ray(R.x,R.y,R.z,R.cx,R.cy,R.cz,S.n, 1) 
+    end
+    ss = sqrt(R.cx^2 + R.cy^2 + R.cz^2)
+    Rcx=R.cx/ss
+    Rcy=R.cy/ss
+    Rcz=R.cz/ss
 
-        mu=R.n/S.n  # ratio of the refraction indices
-        if S.r == 0.0
-            c = 0.0   # curvature of the surface
-        else
-            c = 1.0 / S.r
-        end
-
+    mu=R.n/S.n  # ratio of the refraction indices
+    c=S.curv    # curvagure of the surface
         #println(c*(R.x^2+R.y^2+R.z^2)-2.0*R.x)  # test on distances
         #println(R.cx, " ", R.cy, " ", R.cz)  # test on angles
         
-        e= S.d*Rcx - R.x*Rcx -R.y*Rcy - R.z*Rcz
-        M1x = R.x + e*Rcx - S.d
-        M12 = R.x^2 + R.y^2 + R.z^2 - e^2 + S.d^2 - 2.0 * S.d * R.x
+    e= S.d*Rcx - R.x*Rcx -R.y*Rcy - R.z*Rcz
+    M1x = R.x + e*Rcx - S.d
+    M12 = R.x^2 + R.y^2 + R.z^2 - e^2 + S.d^2 - 2.0 * S.d * R.x
         #println(R.x,"  ",R.y,"  ",R.z,"  ",Rcx,"  ",Rcy,"  ",Rcz,"  ")
         
-        if (Rcx^2 - c*(c*M12 -2.0 * M1x)) < 0.0
-            R1 = R1 = Ray(R.x,R.y,R.z,R.cx,R.cy,R.cz,S.n, 1)
-            return R1
-        end
-        #println("!!!!!!!!!!!!!!!!!!!!!!!!!")
-        ksi1 = sqrt(Rcx^2 - c*(c*M12 -2.0 * M1x))
-        #println(ksi1)
-        L = e + (c*M12 - 2*M1x)/(Rcx + ksi1)
-        x = R.x + L*Rcx - S.d
-        y = R.y + L*Rcy
-        z = R.z + L*Rcz
-        if  (1.0 - mu^2 * (1.0 - ksi1^2)) < 0.0
-            R1 = Ray(R.x,R.y,R.z,R.cx,R.cy,R.cz,S.n, 1)
-            return R1
-        end
-        ksi11 = sqrt(1.0 - mu^2 * (1.0 - ksi1^2))
-        g1 = ksi11 - mu*ksi1
-        cx = mu * Rcx - g1 * c * x + g1
-        cy = mu * Rcy - g1 * c * y
-        cz = mu * Rcz - g1 * c * z
-        ll = sqrt(cx*cx + cy*cy + cz*cz)
-        #if ll > 1 println(ll) end
-        R1 = Ray(x,y,z,cx/ll,cy/ll,cz/ll,S.n, 0)
-        #println(g1)
-        #println(c)
-        #println(y)
+    if (Rcx^2 - c*(c*M12 -2.0 * M1x)) < 0.0
+        R1 = R1 = Ray(R.x,R.y,R.z,R.cx,R.cy,R.cz,S.n, 1)
         return R1
-    else
-       return Ray(R.x,R.y,R.z,R.cx,R.cy,R.cz,S.n, 1) 
     end
+        #println("!!!!!!!!!!!!!!!!!!!!!!!!!")
+    ksi1 = sqrt(Rcx^2 - c*(c*M12 -2.0 * M1x))
+        #println(ksi1)
+    L = e + (c*M12 - 2*M1x)/(Rcx + ksi1)
+    x = R.x + L*Rcx - S.d
+    y = R.y + L*Rcy
+    z = R.z + L*Rcz
+    if  (1.0 - mu^2 * (1.0 - ksi1^2)) < 0.0
+        R1 = Ray(R.x,R.y,R.z,R.cx,R.cy,R.cz,S.n, 1)
+        return R1
+    end
+    ksi11 = sqrt(1.0 - mu^2 * (1.0 - ksi1^2))
+    g1 = ksi11 - mu*ksi1
+    cx = mu * Rcx - g1 * c * x + g1
+    cy = mu * Rcy - g1 * c * y
+    cz = mu * Rcz - g1 * c * z
+    ll = sqrt(cx*cx + cy*cy + cz*cz)
+        #if ll > 1 println(ll) end
+    if (y^2+z^2) > S.aper^2 # cheking the vignetting 
+        R1 = Ray(x,y,z,cx/ll,cy/ll,cz/ll,S.n, 1)
+        else
+        R1 = Ray(x,y,z,cx/ll,cy/ll,cz/ll,S.n, 0)
+    end 
+    return R1
    #println(c*(R1.x^2+R1.y^2+R1.z^2)-2*R1.x)  # test on distances
    #println(R1.cx^2+R1.cy^2+R1.cz^2)  # test on angles
 end
@@ -283,9 +279,9 @@ function Propagate(Ray_pencil::Vector{Ray}, OptSys::Tuple)
         yy = Array{Float64}(undef,size(Ray_pencil)[1])
         for i in 1:size(Ray_pencil)[1]
             #println(pencil[i,j])
-            rr = Ray_pencil[i]
+            
              xx[i] = Ray_pencil[i].y
-             yy[i] = rr.z
+             yy[i] = Ray_pencil[i].z
         end
     #println(Pencil_rms(pencil))
     (display(scatter(xx, yy)))
@@ -294,7 +290,12 @@ function Propagate(Ray_pencil::Vector{Ray}, OptSys::Tuple)
 
 function ConvFromAbbe(sur::Abbe_Surf) 
     n = n_Abbe(sur.lambda, sur.glass)
-    return Surf(sur.r, sur.d, n, sur.e2, sur.stop)
+    if sur.r == 0 
+        curv = 0.
+    else
+        curv = 1.0 / sur.r
+    end
+    return Surf(curv, sur.d, n, sur.e2, sur.aper, sur.stop)
 end
 
 function TupleSize(a::Tuple)
@@ -304,3 +305,99 @@ function TupleSize(a::Tuple)
     end
     return ii
 end    
+
+""" primitive thickness of the system """
+function SysThickness(s::Array{Surface})
+    t= 0.0
+    tmax = 0.0
+    tmin= 0.0
+    for surf in s
+        t=t+surf.d
+        if t > tmax tmax = t end
+        if t < tmin tmin = t end
+    end
+    return(t, tmin, tmax)
+end
+
+""" Primitive system plot, requires Luxor.jl """
+function Plot_Sys_2D(s::Array{Surface})
+    (length, left, right) = SysThickness(s)
+    Drawing(640, 400, "Lens.png")
+    scal = 640.0 / (right -left) /1.3
+    #scal = 1.
+    origin(50,200)
+    #bb=BoundingBox()
+    t=0.0
+    background("white")
+    sethue("tomato")
+    for i in 1:size(s)[1]
+        #println(s[i].d," ",s[i].r," ",s[i].aper)
+        t=t + s[i].d 
+        tt = scal*t
+        if isdefined(s[i],:r)
+            r = scal * s[i].r
+        else
+            if s[i].curv == 0
+                r=0
+                else
+                r = scal / s[i].curv
+            end 
+        end   
+        ap=scal * s[i].aper
+        
+        if r == 0
+            line(Point(tt, -ap), Point(tt,ap), :stroke)
+        end
+        if r > 0
+            arc2r(Point(tt+r, 0), Point(tt + ap^2/2.0/r,ap), Point(tt+ap^2/2.0/r, -ap), :stroke)
+        end
+        if r < 0
+            arc2r(Point(tt+r, 0), Point(tt + ap^2/2.0/r,-ap), Point(tt+ap^2/2.0/r, ap), :stroke)
+        end
+
+        
+    end
+    finish()
+    preview()
+end
+
+#=
+
+""" Primitive system plot, requires Luxor.jl """
+function Plot_Sys_2D(s::Array{Surf})
+    (length, left, right) = SysThickness(s)
+    Drawing(640, 400, "Lens.png")
+    scal = 640.0 / (right -left) /1.3
+    #scal = 1.
+    origin(50,200)
+    #bb=BoundingBox()
+    t=0.0
+    background("white")
+    sethue("tomato")
+    for i in 1:size(s)[1]
+        
+        t=t + s[i].d 
+        tt = scal*t
+        if s[i].curv == 0
+            r=0
+            else
+            r = scal / s[i].curv
+        end 
+        ap=scal * s[i].aper
+        
+        if r == 0
+            line(Point(tt, -ap), Point(tt,ap), :stroke)
+        end
+        if r > 0
+            arc2r(Point(tt+r, 0), Point(tt + ap^2/2.0/r,ap), Point(tt+ap^2/2.0/r, -ap), :stroke)
+        end
+        if r < 0
+            arc2r(Point(tt+r, 0), Point(tt + ap^2/2.0/r,-ap), Point(tt+ap^2/2.0/r, ap), :stroke)
+        end
+
+        
+    end
+    finish()
+    preview()
+end
+=#

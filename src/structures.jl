@@ -28,10 +28,11 @@ abstract type Surface end
 
 """ normal refracting surface """
 mutable struct Surf <: Surface  # Defined as in Mikhelson "optics for astronomical telescopes" p94
-    r::Float64  # ROC
+    curv::Float64  # surface curvature
     d::Float64  # thickness BEFORE surface
     n::Float64   # refractive index
     e2::Float64  #  e square (excentricity)
+    aper::Float64 # aperture radius on the surface
     stop::Number  # set to 1 for a stop
 end
 """ Refracting surface with AbbeGlass """
@@ -40,12 +41,14 @@ struct Abbe_Surf <: Surface  # Defined as in Mikhelson "optics for astronomical 
     d::Float64  # thickness BEFORE surface
     glass::AbbeGlass   # refractive index
     lambda::Number
+    aper::Float64 # aperture radius on the surface
     e2::Float64  #  e square (excentricity)
     stop::Number  # set to 1 for a stop
 end
 """ An attempt of paraxial surface, tricky, "sine condition???" """
 struct Paraxial  <: Surface # paraxial lens
-    f::Float64  # focal length   
+    f::Float64  # focal length  
+    aper::Float64 # aperture radius on the surface
 end
 """ Separate structure for pupil, has to be defined by ray propagation though the 
 front and back part of the system """
@@ -55,6 +58,14 @@ struct Pupil <: Surface
     y::Float64
     z::Float64
 end
+
+
+
+
+
+        
+
+
 
 
 """ Glasses with Abber Numbers """

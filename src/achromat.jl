@@ -2,11 +2,12 @@
 using Plots
 using Statistics
 using Optim
+using Luxor
 
 include("structures.jl")
 
 include("routines.jl")
-lambda = [450, 550, 630]
+lambda = [400, 550, 620]
 field = [0.0 0.0; 1000.0 0.0; 0.0 1000.0]
 # array for all surfaces and all lambdas
 s = Array{Surface,2}(undef, 5, size(lambda)[1])
@@ -14,11 +15,11 @@ ss = Array{Surface,2}(undef, 5, size(lambda)[1])
 
 # definition of all surfaces with glasses
 for ilam in 1:3
-    ss[1,ilam]=Abbe_Surf(1000.0, 20000.0, K10, lambda[ilam], 0., 0)
-    ss[2,ilam]=Abbe_Surf(1000.0, 5, SF6, lambda[ilam], 0., 0)
-    ss[3,ilam]=Abbe_Surf(1000, 5. , F2, lambda[ilam], 0. ,0)
-    ss[4,ilam]=Abbe_Surf(1000, 5. , AIR, lambda[ilam], 0. ,0)
-    ss[5,ilam]=Abbe_Surf(1000, 100. , AIR, lambda[ilam], 0. ,0)
+    ss[1,ilam]=Abbe_Surf(0.0, 20000.0, K10, lambda[ilam], 10.0, 0., 0)
+    ss[2,ilam]=Abbe_Surf(30, 5, SF6, lambda[ilam], 10.0, 0., 0)
+    ss[3,ilam]=Abbe_Surf(-44, 5. , F2, lambda[ilam], 10.0, 0. ,0)
+    ss[4,ilam]=Abbe_Surf(-84, 5. , AIR, lambda[ilam], 10.0, 0. ,0)
+    ss[5,ilam]=Abbe_Surf(0.0, 100. , AIR, lambda[ilam], 10.0, 0. ,0)
 end
 # conversion of all surfaces into Surf
 for ilam in 1:size(lambda)[1]
@@ -38,8 +39,8 @@ xx[4] = 1. / 3000
 u = copy(xx)
 l = copy(xx)
 for i in 1:4
-    u[i] = 0.0001
-    l[i] = -0.0001
+    u[i] = 0.00001
+    l[i] = -0.00001
 end
 
 function FF(xx::Array{Float64})
@@ -48,10 +49,10 @@ function FF(xx::Array{Float64})
         for ilam in 1:3
             #println(field[ifield,1])
             pencil = make__hex_pencil(field[ifield,1], field[ifield,2],entr_pupil, 11)
-            s[1,ilam].r = 1 / xx[1]
-            s[2,ilam].r = 1 / xx[2]
-            s[3,ilam].r = 1 / xx[3]
-            s[4,ilam].r = 1 / xx[4]
+            for ii in 1:size(xx)[1]
+                #println(field[ifield,1])
+                s[ii,ilam].curv = xx[ii]
+            end
             Propagate(pencil, s[ : , ilam])  # does work !!!
             rr = rr + (Pencil_rms(pencil))[1]
         end
@@ -59,7 +60,7 @@ function FF(xx::Array{Float64})
     return rr
 end
     
-        result = optimize(FF,xx, l, u, NelderMead(),Optim.Options(g_tol = 1e-12))
+        result = optimize(FF,xx, l, u, NelderMead(), Optim.Options(g_tol = 1e-12))
         
         #xx = copy(xx1)
     
@@ -73,19 +74,23 @@ end
     xx1=Optim.minimizer(result)
     println(1 ./ xx1, "  ", Optim.minimum(result))
     gr()
+    
     for ifield  in 1:3
         for ilam in  1:3
             #println(field[ifield,1])
             pencil = make__hex_pencil(field[ifield,1], field[ifield,2],entr_pupil, 11)
-            s[1,ilam].r = 1 ./ xx1[1]
-            s[2,ilam].r = 1 ./ xx1[2]
-            s[3,ilam].r = 1 ./ xx1[3]
-            s[4,ilam].r = 1 ./ xx1[4]
+            for ii in 1:size(xx)[1]
+                #println(field[ifield,1])
+                s[ii,ilam].curv = xx1[ii]
+            end
 
             Propagate(pencil, s[ : , ilam])  # does work !!!
-            show_pencil(pencil)
+            #show_pencil(pencil)
             println(Pencil_rms(pencil)[1])
-            sleep(1.3)
+            #sleep(0.3)
         end
     end
  
+    #println(SysThickness(ss[1:size(ss)[1],1]))
+    #Plot_Sys_2D(ss[2:size(ss)[1],1])
+    Plot_Sys_2D(ss[2:size(s)[1],1])
