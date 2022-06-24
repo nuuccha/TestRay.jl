@@ -8,10 +8,11 @@ include("structures.jl")
 include("routines.jl")
 lambda = [450, 550, 630]
 field = [0.0 0.0; 5000.0 0.0; 0.0 5000.0]
+# array for all surfaces and all lambdas
 s = Array{Surface,2}(undef, 8, size(lambda)[1])
 ss = Array{Surface,2}(undef, 8, size(lambda)[1])
 
-
+# definition of all surfaces with glasses
 for ilam in 1:3
     ss[1,ilam]=Abbe_Surf(33.97, 20000.0, F2, lambda[ilam], 0., 0)
     ss[2,ilam]=Abbe_Surf(0.0, 6.1878, AIR, lambda[ilam], 0., 0)
@@ -22,7 +23,7 @@ for ilam in 1:3
     ss[7,ilam]=Abbe_Surf(-46.366, 8.189, AIR, lambda[ilam], 0., 0)
     ss[8,ilam]=Abbe_Surf(0.0, 83.732, AIR , lambda[ilam], 0., 0)
 end
-
+# conversion of all surfaces into Surf
 for ilam in 1:size(lambda)[1]
     for i = 1:size(ss)[1]
         s[i,ilam] =ConvFromAbbe(ss[i,ilam])
@@ -30,6 +31,7 @@ for ilam in 1:size(lambda)[1]
 end
 
 entr_pupil = Pupil(20000.0, 10.0 ,0.0 ,0.0)
+# array of variables, here only 6, but can be any size
 xx = Array{Float64}(undef, 6)
 xx[1] = 1. / 1000
 xx[2] = 1. / -1000
@@ -37,7 +39,7 @@ xx[3] = 1. / 1000
 xx[4] = 1. / 1500
 xx[5] = 1. / -1000
 xx[6] = 1. / -1000
-
+# bounding arrays in terms of curvature
 u = copy(xx)
 l = copy(xx)
 for i in 1:6

@@ -61,10 +61,10 @@ end
 BK7=AbbeGlass(1.51680, 64.17, "D")
 F2=AbbeGlass(1.62004, 36.37, "D")
 F5=AbbeGlass(1.60342, 38.03, "D")
-K10=AbbeGlass(1.50137, 60.41, "D")
+K10=AbbeGlass(1.5014, 56.409, "D")
 LAFN7=AbbeGlass(1.7495, 34.95, "D")
 NF2=AbbeGlass(1.62005, 36.43, "D")
 NSF6=AbbeGlass(1.80518, 25.36, "D")
 NPK52A=AbbeGlass(1.497, 81.61, "D")
 AIR=AbbeGlass(1.0, 10000., "D")
-
+SF6=AbbeGlass(1.8052, 25.432, "D")
