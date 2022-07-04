@@ -5,8 +5,9 @@ using Optim
 using Luxor
 
 include("structures.jl")
-
 include("routines.jl")
+include("graph_routines.jl")
+
 lambda = [400, 550, 620]
 field = [0.0 0.0; 1000.0 0.0; 0.0 1000.0]
 # array for all surfaces and all lambdas
@@ -28,7 +29,7 @@ for ilam in 1:size(lambda)[1]
     end 
 end
 
-entr_pupil = Pupil(20000.0, 5.0 ,0.0 ,0.0)
+entr_pupil = Pupil(20000.0, 10.0 ,0.0 ,0.0)
 # array of variables, here only 6, but can be any size
 xx = Array{Float64}(undef, 4)
 xx[1] = 1. / 2000
@@ -85,7 +86,7 @@ end
             end
 
             Propagate(pencil, s[ : , ilam])  # does work !!!
-            #show_pencil(pencil)
+            show_pencil(pencil)
             println(Pencil_rms(pencil)[1])
             #sleep(0.3)
         end
@@ -93,4 +94,4 @@ end
  
     #println(SysThickness(ss[1:size(ss)[1],1]))
     #Plot_Sys_2D(ss[2:size(ss)[1],1])
-    Plot_Sys_2D(ss[2:size(s)[1],1])
+    #Plot_Sys_2D(s[2:size(s)[1],1])

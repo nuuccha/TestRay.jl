@@ -143,6 +143,35 @@ function make__hex_pencil(y0, z0, pupil::Pupil, Hex_Order=5)
     return(pencil)
 end
 
+""" Flat ray pencil pointed from y0 to the entrance pupil 
+    Hex_order is the number of rays in the side of hexagon
+    for Hex_Order = 5 a hexagon pencil with 61 ray will be produced"""
+function make_flat_pencil(y0, pupil::Pupil, N_Rays = 5)
+    angles = Array{Float64, 2}(undef, N_Rays ,2)
+    # directions to the pupil center:
+    dd = sqrt((pupil.y-y0)^2+pupil.distance^2)
+    dir_y=(pupil.y - y0) / dd
+    # the pencil angle
+    maxang = (pupil.radius) / dd
+    da = 2.0 * maxang /(N_Rays -1.)
+    println(da)
+    for i in 1:N_Rays
+        angles[i,1] = i*da - maxang
+        angles[i,2] = 0.0
+    end
+    np=size(angles)[1] 
+    #println(np)
+    pencil = Vector{Ray}(undef,np)
+    for i in 1:np
+        angles[i,1] = angles[i,1]+dir_y
+            cx=sqrt(1.0 - (angles[i,1])^2 - (angles[i,2])^2)
+            pencil[i] = Ray(0.0, y0, 0.0, cx, angles[i,1] , angles[i,2] , 1.0, 0)
+    end
+    return(pencil)
+end
+
+
+
 
 function Propagate(Single_Ray::Ray, OptSys::Tuple)
     for OptSurf in OptSys
@@ -317,48 +346,6 @@ function SysThickness(s::Array{Surface})
         if t < tmin tmin = t end
     end
     return(t, tmin, tmax)
-end
-
-""" Primitive system plot, requires Luxor.jl """
-function Plot_Sys_2D(s::Array{Surface})
-    (length, left, right) = SysThickness(s)
-    Drawing(640, 400, "Lens.png")
-    scal = 640.0 / (right -left) /1.3
-    #scal = 1.
-    origin(50,200)
-    #bb=BoundingBox()
-    t=0.0
-    background("white")
-    sethue("tomato")
-    for i in 1:size(s)[1]
-        #println(s[i].d," ",s[i].r," ",s[i].aper)
-        t=t + s[i].d 
-        tt = scal*t
-        if isdefined(s[i],:r)
-            r = scal * s[i].r
-        else
-            if s[i].curv == 0
-                r=0
-                else
-                r = scal / s[i].curv
-            end 
-        end   
-        ap=scal * s[i].aper
-        
-        if r == 0
-            line(Point(tt, -ap), Point(tt,ap), :stroke)
-        end
-        if r > 0
-            arc2r(Point(tt+r, 0), Point(tt + ap^2/2.0/r,ap), Point(tt+ap^2/2.0/r, -ap), :stroke)
-        end
-        if r < 0
-            arc2r(Point(tt+r, 0), Point(tt + ap^2/2.0/r,-ap), Point(tt+ap^2/2.0/r, ap), :stroke)
-        end
-
-        
-    end
-    finish()
-    preview()
 end
 
 #=
