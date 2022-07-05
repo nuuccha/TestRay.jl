@@ -15,13 +15,13 @@ ss = Array{Surface,2}(undef, 8, size(lambda)[1])
 # definition of all surfaces with glasses
 for ilam in 1:size(lambda)[1]
     ss[1,ilam]=Abbe_Surf(33.97, 20000.0, F2, lambda[ilam], 10.0, 0., 0)
-    ss[2,ilam]=Abbe_Surf(0.0, 6.1878, AIR, lambda[ilam], 200.0, 0., 0)
-    ss[3,ilam]=Abbe_Surf(-62.67, 6.9862, BK7, lambda[ilam], 200.0, 0. ,0)
-    ss[4,ilam]=Abbe_Surf(29.58, 2.495, AIR, lambda[ilam], 200.0, 0., 0)
-    ss[5,ilam]=Abbe_Surf(1625.0, 7.4852, F5, lambda[ilam], 200.0, 0., 0)
-    ss[6,ilam]=Abbe_Surf(27.34, 2.1957, LAFN7, lambda[ilam], 200.0, 0., 0)
-    ss[7,ilam]=Abbe_Surf(-46.366, 8.189, AIR, lambda[ilam], 200.0, 0., 0)
-    ss[8,ilam]=Abbe_Surf(0.0, 83.732, AIR , lambda[ilam], 300.0, 0., 0)
+    ss[2,ilam]=Abbe_Surf(0.0, 6.1878, AIR, lambda[ilam], 10.0, 0., 0)
+    ss[3,ilam]=Abbe_Surf(-62.67, 6.9862, BK7, lambda[ilam], 10.0, 0. ,0)
+    ss[4,ilam]=Abbe_Surf(29.58, 2.495, AIR, lambda[ilam], 10.0, 0., 0)
+    ss[5,ilam]=Abbe_Surf(1625.0, 7.4852, F5, lambda[ilam], 10.0, 0., 0)
+    ss[6,ilam]=Abbe_Surf(27.34, 2.1957, LAFN7, lambda[ilam], 10.0, 0., 0)
+    ss[7,ilam]=Abbe_Surf(-46.366, 8.189, AIR, lambda[ilam], 10.0, 0., 0)
+    ss[8,ilam]=Abbe_Surf(0.0, 83.732, AIR , lambda[ilam], 10.0, 0., 0)
 end
 # conversion of all surfaces into Surf
 for ilam in 1:size(lambda)[1]
@@ -102,12 +102,12 @@ for ilam in  1:3
         s[7,ilam].curv = xx1[6]
 
     Propagate(pencil, s[ : , ilam])  # does work !!!
-    show_pencil(pencil)
+    #show_pencil(pencil)
     println(Pencil_rms(pencil)[1])
-    sleep(1.3)
+    #sleep(1.3)
 end
 end
-
+Plot_Sys_2D(s[1:size(s)[1],1])
 
 #=
         result = optimize(FF,xx, l, u, NelderMead())

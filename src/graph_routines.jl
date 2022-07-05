@@ -37,22 +37,43 @@ function Plot_Sys_2D(s::Array{Surface})
 
         
     end
-    pencil = make_flat_pencil(1, entr_pupil,5)
+    sethue("blue")
+    nr=5
+    pencil = make_flat_pencil(20, entr_pupil,nr)
     t=0
-    for i in 1:4
+    for i in 1:1:size(s)[1]
         t1 = t
         t = t + s[i].d 
         pencil_ = copy(pencil)
         
         #Propagate(pencil,(s[i,1],))
-        for j in 1:4
-            pencil[j] = Propagate(pencil[j],s[j,1])
-            println(pencil[j])
+        for j in 1:nr
+            pencil[j] = Propagate(pencil[j],s[i,1])
+            #println(pencil_[j].y," ",pencil[j].y," ", s[i].aper  )
             line(Point(scal *t1, scal *pencil_[j].y), Point(scal *t,scal *pencil[j].y), :stroke)
         end
         
 
     end
+
+    sethue("green")
+    pencil = make_flat_pencil(0, entr_pupil,nr)
+    t=0
+    for i in 1:1:size(s)[1]
+        t1 = t
+        t = t + s[i].d 
+        pencil_ = copy(pencil)
+        
+        #Propagate(pencil,(s[i,1],))
+        for j in 1:nr
+            pencil[j] = Propagate(pencil[j],s[i,1])
+            #println(pencil_[j].y," ",pencil[j].y," ", s[i].aper  )
+            line(Point(scal *t1, scal *pencil_[j].y), Point(scal *t,scal *pencil[j].y), :stroke)
+        end
+        
+
+    end
+
     finish()
     preview()
 end

@@ -156,7 +156,7 @@ function make_flat_pencil(y0, pupil::Pupil, N_Rays = 5)
     da = 2.0 * maxang /(N_Rays -1.)
     println(da)
     for i in 1:N_Rays
-        angles[i,1] = i*da - maxang
+        angles[i,1] = (i-1)*da - maxang
         angles[i,2] = 0.0
     end
     np=size(angles)[1] 
