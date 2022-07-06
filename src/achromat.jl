@@ -8,8 +8,8 @@ include("structures.jl")
 include("routines.jl")
 include("graph_routines.jl")
 
-lambda = [550]
-field = [0.0 0.0; 1000.0 0.0]
+lambda = [550,440,650]
+field = [0.0 0.0; 20.0 0.0]
 nfield=size(field)[1]
 # array for all surfaces and all lambdas
 s = Array{Surface,2}(undef, 5, size(lambda)[1])
@@ -18,11 +18,11 @@ ss = Array{Surface,2}(undef, 5, size(lambda)[1])
 # definition of all surfaces with glasses
 nlam = size(lambda)[1]
 for ilam in 1:nlam
-    ss[1,ilam]=Abbe_Surf(0.0, 100.0, K10, lambda[ilam], 10.0, 0., 0)
-    ss[2,ilam]=Abbe_Surf(30, 5, SF6, lambda[ilam], 10.0, 0., 0)
-    ss[3,ilam]=Abbe_Surf(-44, 5. , F2, lambda[ilam], 10.0, 0. ,0)
-    ss[4,ilam]=Abbe_Surf(-84, 5. , AIR, lambda[ilam], 10.0, 0. ,0)
-    ss[5,ilam]=Abbe_Surf(0.0, 50. , AIR, lambda[ilam], 10.0, 0. ,0)
+    ss[1,ilam]=Abbe_Surf(0.0, 100.0, BK7, lambda[ilam], 14.0, 0., 0)
+    ss[2,ilam]=Abbe_Surf(30, 5, SF6, lambda[ilam], 14.0, 0., 0)
+    ss[3,ilam]=Abbe_Surf(-44, 5. , LAFN7, lambda[ilam], 14.0, 0. ,0)
+    ss[4,ilam]=Abbe_Surf(-84, 5. , AIR, lambda[ilam], 14.0, 0. ,0)
+    ss[5,ilam]=Abbe_Surf(0.0, 50. , AIR, lambda[ilam], 30.0, 0. ,0)
 end
 # conversion of all surfaces into Surf
 for ilam in 1:nlam
@@ -31,7 +31,7 @@ for ilam in 1:nlam
     end 
 end
 
-entr_pupil = Pupil(100.0, 6.0 ,0.0 ,0.0)
+entr_pupil = Pupil(100.0, 5.0 ,0.0 ,0.0)
 # array of variables, here only 6, but can be any size
 xx = Array{Float64}(undef, 4)
 xx[1] = 1. / 2000
@@ -42,8 +42,8 @@ xx[4] = 1. / 3000
 u = copy(xx)
 l = copy(xx)
 for i in 1:4
-    u[i] = 0.001
-    l[i] = -0.001
+    u[i] = 0.01
+    l[i] = -0.01
 end
 
 function FF(xx::Array{Float64})
@@ -51,7 +51,7 @@ function FF(xx::Array{Float64})
     for ifield in 1:nfield
         for ilam in 1:nlam
             #println(field[ifield,1])
-            pencil = make__hex_pencil(field[ifield,1], field[ifield,2],entr_pupil, 11)
+            pencil = make__hex_pencil(field[ifield,1], field[ifield,2],entr_pupil, 15)
             for ii in 1:size(xx)[1]
                 #println(field[ifield,1])
                 s[ii,ilam].curv = xx[ii]
@@ -67,7 +67,7 @@ end
         
         #xx = copy(xx1)
     
-    for ii in 1:3
+    for ii in 1:1
         xx2=Optim.minimizer(result)
         #xx2 = xx2 .+ rand(Float64,6)
         global result = Optim.optimize(FF,xx2, l, u, NelderMead(),Optim.Options(g_tol = 1e-12))
@@ -81,7 +81,7 @@ end
     for ifield  in 1:nfield
         for ilam in  1:nlam
             #println(field[ifield,1])
-            pencil = make__hex_pencil(field[ifield,1], field[ifield,2],entr_pupil, 11)
+            pencil = make__hex_pencil(field[ifield,1], field[ifield,2],entr_pupil, 5)
             for ii in 1:size(xx)[1]
                 #println(field[ifield,1])
                 s[ii,ilam].curv = xx1[ii]

@@ -50,7 +50,9 @@ function Plot_Sys_2D(s::Array{Surface})
         for j in 1:nr
             pencil[j] = Propagate(pencil[j],s[i,1])
             #println(pencil_[j].y," ",pencil[j].y," ", s[i].aper  )
-            line(Point(scal *t1, scal *pencil_[j].y), Point(scal *t,scal *pencil[j].y), :stroke)
+            if pencil[j].empty != 1
+                line(Point(scal *t1, scal *pencil_[j].y), Point(scal *t,scal *pencil[j].y), :stroke)
+            end
         end
         
 
@@ -68,7 +70,9 @@ function Plot_Sys_2D(s::Array{Surface})
         for j in 1:nr
             pencil[j] = Propagate(pencil[j],s[i,1])
             #println(pencil_[j].y," ",pencil[j].y," ", s[i].aper  )
-            line(Point(scal *t1, scal *pencil_[j].y), Point(scal *t,scal *pencil[j].y), :stroke)
+            if pencil[j].empty != 1
+                line(Point(scal *t1, scal *pencil_[j].y), Point(scal *t,scal *pencil[j].y), :stroke)
+            end
         end
         
 
